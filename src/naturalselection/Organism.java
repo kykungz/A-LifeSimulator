@@ -7,6 +7,7 @@ package naturalselection;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.util.ArrayList;
@@ -39,9 +40,15 @@ public class Organism {
     protected String food;
     protected String predator;
     protected int size;
+    protected Organism leader;
+    protected int gap = 16;
     //
     public boolean open = false;
     //
+
+    public Organism getLeader() {
+        return leader;
+    }
 
     public String getSpecie() {
         return specie;
@@ -79,14 +86,86 @@ public class Organism {
                 energy = 0;
             }
         }
-        ArrayList<Organism> list = inRadar();
-        if (!list.isEmpty()) {
+        ArrayList<Organism> inradar = inRadar();
+        ArrayList<Organism> localFriends = getLocalFriends();
+        if (!inradar.isEmpty()) { // found something in radar
             direction = direction * -1;
-            interact(list);
+            interact(inradar);
+        } else if (!localFriends.isEmpty()) {
+            follow(localFriends);
         } else {
             moveRandomly();
         }
-        offScreenFix();
+
+    }
+
+    public void follow(ArrayList<Organism> localFriends) {
+        updateLeader(localFriends);
+        if (leader == null) {
+            moveRandomly();
+            return;
+        }
+        int UP = 0;
+        int DOWN = 0;
+        int LEFT = 0;
+        int RIGHT = 0;
+        if (x > leader.getX()) {
+            LEFT++;
+        } else if (x < leader.getX()) {
+            RIGHT++;
+        }
+        if (y > leader.getY()) {
+            UP++;
+        } else if (y < leader.getY()) {
+            DOWN++;
+        }
+        avoidCrowding(localFriends, UP, DOWN, LEFT, RIGHT);
+    }
+
+    public void avoidCrowding(ArrayList<Organism> localFriends, int UP, int DOWN, int LEFT, int RIGHT) {
+        if (getSurroundingFriends().isEmpty()) {
+            calculate(UP, DOWN, LEFT, RIGHT);
+            return;
+        }
+        for (Organism friend : getSurroundingFriends()) {
+            if (friend != leader && friend.getLeader() == leader) {
+                if (x > friend.getX()) {
+                    RIGHT++;
+                } else {
+                    LEFT++;
+                }
+                if (y > friend.getX()) {
+                    DOWN++;
+                } else {
+                    UP++;
+                }
+            }
+        }
+        calculate(UP, DOWN, LEFT, RIGHT);
+
+    }
+
+    public void updateLeader(ArrayList<Organism> localFriends) {
+        if (leader == null) {
+            for (Organism friend : localFriends) {
+                if (friend.getRadar().getWidth() > this.getRadar().getWidth()) {
+                    leader = friend;
+                    break;
+                }
+            }
+            if (leader == null) {
+                return;
+            }
+        } else if (leader.getLeader() != null) {
+            leader = leader.getLeader();
+        }
+
+        for (Organism friend : localFriends) {
+            if (friend != leader && friend.getRadar().getWidth() > leader.getRadar().getWidth()) {
+                leader = friend;
+            }
+        }
+
     }
 
     public void offScreenFix() {
@@ -148,26 +227,42 @@ public class Organism {
                 }
             }
         }
-        // calculate
-        //System.out.println(specie + " interacted [UP][DOWN][LEFT][RIGHT] = " + UP + " " + DOWN + " " + LEFT + " " + RIGHT);
+
+        calculate(UP, DOWN, LEFT, RIGHT);
+
+    }
+
+    public void calculate(int UP, int DOWN, int LEFT, int RIGHT) {
         if (DOWN > UP) {
-            //System.out.println(specie + " is moving DOWN");
             y += speed;
         } else if (DOWN < UP) {
-            //.out.println(specie + " is moving UP");
             y -= speed;
-        } else {
-            //System.out.println(specie + " is moveing ELSE [Y]");
+        }
+        if (LEFT > RIGHT) {
+            x -= speed;
+        } else if (LEFT < RIGHT) {
+            x += speed;
+        }
+    }
+
+    public Point foreProsition(int UP, int DOWN, int LEFT, int RIGHT) {
+        int testX = x;
+        int testY = y;
+        if (DOWN > UP) {
+            //System.out.println(specie + " is moving DOWN");
+            testY += speed;
+        } else if (DOWN < UP) {
+            //.out.println(specie + " is moving UP");
+            testY -= speed;
         }
         if (LEFT > RIGHT) {
             //System.out.println(specie + " is moving LEFT");
-            x -= speed;
+            testX -= speed;
         } else if (LEFT < RIGHT) {
             //System.out.println(specie + " is moving RIGHT");
-            x += speed;
-        } else {
-            //System.out.println(specie + " is moveing ELSE [X]");
+            testX += speed;
         }
+        return new Point(testX, testY);
     }
 
     public boolean isPredator(Organism o) {
@@ -178,6 +273,38 @@ public class Organism {
 
     public boolean isPrey(Organism o) {
         return o.getSpecie().equalsIgnoreCase(this.food);
+    }
+
+    public boolean isFriend(Organism o) {
+        return o.getSpecie().equalsIgnoreCase(this.specie);
+    }
+
+    public ArrayList<Organism> getLocalFriends() {
+        ArrayList<Organism> localFriends = new ArrayList<>();
+        for (Organism o : NaturalSelection.organisms) {
+            if (o.getBound().intersects(getFriendRadar()) && o != this && o.getSpecie().equalsIgnoreCase(specie)) {
+                localFriends.add(o);
+            }
+        }
+        return localFriends;
+
+    }
+
+    public ArrayList<Organism> getSurroundingFriends() {
+        ArrayList<Organism> friends = new ArrayList<>();
+        Rectangle area = new Rectangle(x - (gap - size) / 2, y - (gap - size) / 2, gap, gap);
+        for (Organism o : NaturalSelection.organisms) {
+            if (o != this && o != leader && o.getSpecie().equalsIgnoreCase(specie) && o.getBound().intersects(area)) {
+
+                friends.add(o);
+
+            }
+        }
+        return friends;
+    }
+
+    public Rectangle getFriendRadar() {
+        return new Rectangle(x - (9 * size) / 2, y - (9 * size) / 2, 10 * size, 10 * size);
     }
 
     public ArrayList<Organism> inRadar() {
@@ -215,6 +342,10 @@ public class Organism {
         if (open) {
             g.setColor(new Color(255, 250, 10, 50));
             g.fillRect((int) getRadar().getX(), (int) getRadar().getY(), radar, radar);
+            if (leader != null) {
+                g.setColor(Color.black);
+                g.drawLine(x, y, leader.getX(), leader.getY());
+            }
         }
         if (getSpecie().equalsIgnoreCase("wolf")) {
             g.setFont(new Font("tahoma", 0, 16));
@@ -222,10 +353,13 @@ public class Organism {
             g.drawString(energy + "", x, y);
         }
         g.setColor(color);
-
+        if (leader != null) {
+            g.setColor(Color.orange);
+        }
         g.fillOval(x, y, size, size);
         g.setColor(Color.black);
         g.drawOval(x, y, size, size);
+
     }
 
     public Rectangle getBound() {

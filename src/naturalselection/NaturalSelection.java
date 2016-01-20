@@ -58,8 +58,8 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
         frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        create("WOLF", "sheep", null, Color.blue, 3, 10);
-        create("SHEEP", null, "wolf", Color.red, 2, 100);
+        create("WOLF", "sheep", null, Color.blue, 3, 0);
+        create("SHEEP", null, "wolf", Color.red, 2, 200);
         timer.start();
         Thread n = new Thread() {
             @Override
@@ -72,7 +72,7 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
                         Logger.getLogger(NaturalSelection.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     renderer.repaint();
-                    System.out.println(1000/(System.currentTimeMillis()-start)); 
+//                    System.out.println(1000/(System.currentTimeMillis()-start)); 
                 }
             }
         };
@@ -92,10 +92,12 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
             o.update();
 
             if (o.eatenBy() != null) {
+                o = null;
                 it.remove();
                 //System.out.println("removed " + o.getSpecie());
             }
-            if (o.getEnergy() <= 0) {
+            else if (o.getEnergy() <= 0) {
+                o = null;
                 it.remove();
                 //System.out.println("removed " + o.getSpecie());
             }
