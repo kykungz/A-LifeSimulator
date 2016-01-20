@@ -60,16 +60,14 @@ public class Organism {
         x = rand.nextInt(1500 - 200);
         y = rand.nextInt(800 - 200);
         this.speed = speed;
-        //x = 800;y=450;
         this.gender = GENDER.values()[rand.nextInt(GENDER.values().length)];
         this.specie = specie;
         this.color = c;
         this.food = food;
         this.predator = predator;
-        this.size = 15;
+        this.size = 6;
         this.energy = 5000;
-        this.radar = rand.nextInt(size*10) + 1;
-
+        this.radar = rand.nextInt(size * 10) + 1;
     }
 
     public void update() {
@@ -218,15 +216,16 @@ public class Organism {
             g.setColor(new Color(255, 250, 10, 50));
             g.fillRect((int) getRadar().getX(), (int) getRadar().getY(), radar, radar);
         }
-        g.setColor(color);
         if (getSpecie().equalsIgnoreCase("wolf")) {
             g.setFont(new Font("tahoma", 0, 16));
+            g.setColor(Color.black);
             g.drawString(energy + "", x, y);
-            g.setColor(new Color(0, (energy * 100 / 5000) + 100, (energy * 100 / 1000) + 100));
         }
-        g.fillRect(x, y, size, size);
+        g.setColor(color);
+
+        g.fillOval(x, y, size, size);
         g.setColor(Color.black);
-        
+        g.drawOval(x, y, size, size);
     }
 
     public Rectangle getBound() {

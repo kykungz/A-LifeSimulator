@@ -58,8 +58,8 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
         frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        create("WOLF", "sheep", null, Color.BLUE, 3, 1);
-        create("SHEEP", null, "wolf", Color.red, 2, 80);
+        create("WOLF", "sheep", null, Color.blue, 3, 10);
+        create("SHEEP", null, "wolf", Color.red, 2, 100);
         timer.start();
         Thread n = new Thread() {
             @Override
