@@ -221,8 +221,8 @@ public class Organism {
         g.setColor(color);
         if (getSpecie().equalsIgnoreCase("wolf")) {
             g.setFont(new Font("tahoma", 0, 16));
-            //g.drawString(energy + "", x, y);
-            //g.setColor(new Color(0, (energy * 100 / 5000) + 100, (energy * 100 / 1000) + 100));
+            g.drawString(energy + "", x, y);
+            g.setColor(new Color(0, (energy * 100 / 5000) + 100, (energy * 100 / 1000) + 100));
         }
         g.fillRect(x, y, size, size);
 
