@@ -6,6 +6,7 @@ package naturalselection;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -78,25 +79,7 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
         n.start();
     }
 
-    public void render(Graphics g) {
-//        for (Iterator<Organism> it = organisms.iterator(); it.hasNext();) {
-//            Organism o = it.next();
-//            o.update();
-//
-//            if (o.eatenBy() != null) {
-//                it.remove();
-//                System.out.println("removed " + o.getSpecie());
-//            }
-//            if (o.getEnergy() <= 0) {
-//                it.remove();
-//                System.out.println("removed " + o.getSpecie());
-//            }
-//            //o.render(g);
-//        }
-        render(g, 1);
-    }
-
-    public void render(Graphics g, int x) {
+    public void render(Graphics2D g) {
         for (Organism o : organisms) {
             o.render(g);
         }

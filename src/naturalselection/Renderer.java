@@ -5,6 +5,7 @@
 package naturalselection;
 
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import javax.swing.JPanel;
 
@@ -25,6 +26,7 @@ public class Renderer extends JPanel {
         super.paintComponent(g);
         g.drawRect(10, 0,(int)Toolkit.getDefaultToolkit().getScreenSize().getWidth()
                 , (int) Toolkit.getDefaultToolkit().getScreenSize().getHeight()-100);
-        n.render(g);
+        Graphics2D g2 = (Graphics2D) g;
+        n.render(g2);
     }
 }

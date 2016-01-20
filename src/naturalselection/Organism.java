@@ -6,7 +6,7 @@ package naturalselection;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.util.ArrayList;
@@ -213,7 +213,7 @@ public class Organism {
         }
     }
 
-    public void render(Graphics g) {
+    public void render(Graphics2D g) {
         if (open) {
             g.setColor(new Color(255, 250, 10, 50));
             g.fillRect((int) getRadar().getX(), (int) getRadar().getY(), radar, radar);
@@ -225,7 +225,8 @@ public class Organism {
             g.setColor(new Color(0, (energy * 100 / 5000) + 100, (energy * 100 / 1000) + 100));
         }
         g.fillRect(x, y, size, size);
-
+        g.setColor(Color.black);
+        
     }
 
     public Rectangle getBound() {

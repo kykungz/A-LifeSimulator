@@ -5,8 +5,7 @@
 package naturalselection;
 
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 /**
  *
@@ -20,8 +19,7 @@ public class Plant extends Organism {
     }
 
     @Override
-    public void render(Graphics g) {
-
+    public void render(Graphics2D g) {
         g.setColor(Color.green);
         g.fillOval(x, y, size, size);
 
