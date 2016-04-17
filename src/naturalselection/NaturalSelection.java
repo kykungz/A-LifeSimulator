@@ -5,7 +5,6 @@
 package naturalselection;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,7 +12,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -29,7 +29,8 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
     private Timer timer;
     public Organism wolf;
     public static ArrayList<Organism> organisms;
-    public int x = 30;
+    public int updateRate = 30;
+    public JFrame frame;
 
     public static void main(String[] args) {
         NaturalSelection ns = new NaturalSelection();
@@ -38,8 +39,12 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
 
     public NaturalSelection() {
         renderer = new Renderer(this);
-        timer = new Timer(1 * x, this);
+        timer = new Timer(1 * updateRate, this);
         organisms = new ArrayList<>();
+    }
+
+    public static void create(Organism o) {
+        organisms.add(o);
     }
 
     public void create(String specie, String food, String predator, Color c, int speed, int amount) {
@@ -48,8 +53,15 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
         }
     }
 
+    public void createTree(int amount) {
+        for (int i = 0; i < amount; i++) {
+            organisms.add(new Plant("tree", null, null, 200, Color.green, 0));
+        }
+    }
+
     public void start() {
-        JFrame frame = new JFrame("Natural Selection Simulator by Kongpon");
+        frame = new JFrame("Natural Selection Simulator by Kongpon");
+
         frame.addKeyListener(this);
         frame.addMouseListener(this);
         frame.setSize(500, 500);
@@ -58,14 +70,16 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
         frame.setExtendedState(java.awt.Frame.MAXIMIZED_BOTH);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        create("WOLF", "sheep", null, Color.blue, 3, 0);
-        create("SHEEP", null, "wolf", Color.red, 2, 200);
+        //create("ss", "lion", "zz", Color.orange, 3, 100);
+        //create("lion", "sheep", "ss", Color.blue, 3, 50);
+        create("SHEEP", "tree", "lion", Color.red, 2, 50);
+        createTree(100);
         timer.start();
         Thread n = new Thread() {
             @Override
             public void run() {
                 while (true) {
-                    long start  = System.currentTimeMillis();
+                    long start = System.currentTimeMillis();
                     try {
                         Thread.sleep(20);
                     } catch (InterruptedException ex) {
@@ -87,23 +101,24 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        for (Iterator<Organism> it = organisms.iterator(); it.hasNext();) {
-            Organism o = it.next();
-            o.update();
-
-            if (o.eatenBy() != null) {
-                o = null;
-                it.remove();
-                //System.out.println("removed " + o.getSpecie());
+        if (!pause) {
+            Collections.sort(organisms);
+            for (ListIterator<Organism> it = organisms.listIterator(); it.hasNext();) {
+                Organism o = it.next();
+                o.update();
+                if (o.isDead()) {
+                    it.remove();
+                }
+                if (o.breedNow) {
+                    Organism baby = new Organism(o.specie, o.prey, o.predator,o.size, o.color, o.speed);
+                    baby.x = o.x;
+                    baby.y = o.y;
+                    it.add(baby);
+                    o.breed();
+                    
+                }
             }
-            else if (o.getEnergy() <= 0) {
-                o = null;
-                it.remove();
-                //System.out.println("removed " + o.getSpecie());
-            }
-            //o.render(g);
         }
-        //renderer.repaint();
     }
 
     @Override
@@ -116,7 +131,7 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_1) { // open WOLF
             for (Organism o : organisms) {
-                if (o.getSpecie().equalsIgnoreCase("wolf")) {
+                if (o.getSpecie().equalsIgnoreCase("ss")) {
                     o.open = togglewolf;
                 }
             }
@@ -131,17 +146,20 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
             }
             togglesheep = !togglesheep;
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            x += 5;
-            timer.setDelay(x);
+            updateRate += 5;
+            timer.setDelay(updateRate);
 
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            if (x > 0) {
-                x -= 5;
+            if (updateRate > 0) {
+                updateRate -= 5;
             }
-            timer.setDelay(x);
+            timer.setDelay(updateRate);
 
+        } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            pause = !pause;
         }
     }
+    boolean pause = false;
 
     @Override
     public void keyReleased(KeyEvent e) {
@@ -149,7 +167,12 @@ public class NaturalSelection implements ActionListener, KeyListener, MouseListe
 
     @Override
     public void mouseClicked(java.awt.event.MouseEvent e) {
-        create("WOLF", "sheep", null, Color.BLUE, 4, 1);
+        // create("WOLF", "sheep", null, Color.BLUE, 4, 1);
+        Organism sheep = new Organism("sheep", "tree", "wolf",20, Color.red, 2);
+        sheep.x = (int) frame.getMousePosition().getX();
+        sheep.y = (int) frame.getMousePosition().getY();
+        create(sheep);
+        
     }
 
     @Override

@@ -6,6 +6,12 @@ package naturalselection;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -13,15 +19,49 @@ import java.awt.Graphics2D;
  */
 public class Plant extends Organism {
 
+    private BufferedImage tree;
+
     public Plant(String specie, String food, String predator, int size, Color c, int speed) {
-        super(specie, food, predator, size, c, speed);
-        specie = "PLANT";
+
+        super(specie, food, "sheep", size, c, speed);
+        this.specie = "tree";
+        try {
+            tree = ImageIO.read(this.getClass().getResource("/images/tree_tile.png"));
+        } catch (IOException ex) {
+            Logger.getLogger(Plant.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public int compareTo(Organism o) {
+        //if (o instanceof Plant) {
+            if (y > o.y) {
+                return 1;
+            } else if (y < o.y) {
+                return -1;
+            } else {
+                return 0;
+            }
+        //}
+        //return 1;
+
     }
 
     @Override
     public void render(Graphics2D g) {
-        g.setColor(Color.green);
-        g.fillOval(x, y, size, size);
+//        g.setColor(Color.green);
+//       g.fillOval(x, y, 20, 20);
+        g.drawImage(tree, null, x, y);
 
+    }
+
+    @Override
+    public void update() {
+        energy = 10;
+    }
+
+    @Override
+    public Rectangle getBound() {
+        return new Rectangle(x, y, 20, 20);
     }
 }
