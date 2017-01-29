@@ -33,6 +33,11 @@ public class Plant extends Organism {
     }
 
     @Override
+    public void updateEnergy() {
+        super.updateEnergy(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
     public int compareTo(Organism o) {
         //if (o instanceof Plant) {
             if (y > o.y) {
@@ -58,6 +63,7 @@ public class Plant extends Organism {
     @Override
     public void update() {
         energy = 10;
+        age = 0;
     }
 
     @Override
