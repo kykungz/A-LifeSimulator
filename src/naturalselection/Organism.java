@@ -12,8 +12,6 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -60,7 +58,10 @@ public class Organism implements Comparable<Organism> {
     protected int largestDistant = 20;
     protected Point home;
     protected Point food;
-    protected int MAX_ENERGY = 500;
+    protected int MAX_ENERGY = 300;
+    protected int MAX_AGE = 3000;//(int) Math.pow(10, 8);
+    protected int remainingTime;
+    protected int breeded = 0;
     //
     public boolean open = false;
     //
@@ -102,9 +103,10 @@ public class Organism implements Comparable<Organism> {
         this.prey = food;
         this.predator = predator;
         this.size = 8;
-        this.energy = MAX_ENERGY / 2;
+        this.energy = MAX_ENERGY / 3;
         this.radar = rand.nextInt(size * 10) + 1;
         this.score = new Score();
+        this.remainingTime = MAX_AGE;
     }
 
     public void updateEnergy() {
@@ -116,7 +118,16 @@ public class Organism implements Comparable<Organism> {
         }
     }
 
+    private void updateAge() {
+        remainingTime--;
+    }
+
+    private int getAge() {
+        return MAX_AGE - remainingTime;
+    }
+
     public void update() {
+        updateAge();
         updateEnergy();
         ArrayList<Organism> inradar = inRadar();
         ArrayList<Organism> localFriends = getLocalFriends();
@@ -219,7 +230,6 @@ public class Organism implements Comparable<Organism> {
 //            markFood(nearestPrey.getCenterX(), nearestPrey.getCenterY());
 //        }
 
-
     }
 
     public void reproduce() {
@@ -236,13 +246,13 @@ public class Organism implements Comparable<Organism> {
     }
 
     public void breed() {
-        System.out.println("5555");
+        breeded ++;
         breedNow = false;
         energy = energy / 2;
     }
 
     public boolean readyToReproduce() {
-        return energy > (0.6d * (double) MAX_ENERGY);
+        return energy > (0.6d * (double) MAX_ENERGY) && breeded < 5 && getAge() > 300;
     }
 
     public Rectangle getFoodArea() {
@@ -282,7 +292,6 @@ public class Organism implements Comparable<Organism> {
         Organism nearestFriend = null;
         for (Organism o : organisms) {
             if (o.getSpecie().equalsIgnoreCase(specie)) {
-
 
                 if (nearestFriend != null) {
                     if (getDistant(o) < getDistant(nearestFriend)) {
@@ -352,7 +361,7 @@ public class Organism implements Comparable<Organism> {
     }
 
     public boolean isDead() {
-        return energy <= 0;
+        return (energy <= 0) || (remainingTime <= 0);
     }
 
     public boolean isEatable(Organism o) {
@@ -729,7 +738,7 @@ public class Organism implements Comparable<Organism> {
     public ArrayList<Organism> getLocalFriends() {
         ArrayList<Organism> localFriends = new ArrayList<>();
         for (Organism o : NaturalSelection.organisms) {
-            if (o.getBound().intersects(getFriendRadar()) && o != this && o != leader && o.getSpecie().equalsIgnoreCase(specie)) {
+            if (o.getBound().intersects(getFriendRadar()) && o != this && o.getSpecie().equalsIgnoreCase(specie)) {
                 localFriends.add(o);
             }
         }
@@ -753,7 +762,7 @@ public class Organism implements Comparable<Organism> {
     }
 
     public Rectangle getFriendRadar() {
-        return new Rectangle(x - (9 * size) / 2, y - (3 * size) / 2, 10 * size, 10 * size);
+        return new Rectangle(x - (9 * size) / 2, y - (9 * size) / 2, 10 * size, 10 * size);
     }
 
     public ArrayList<Organism> inRadar() {
@@ -785,7 +794,10 @@ public class Organism implements Comparable<Organism> {
             y += speed * direction;
         }
     }
-
+public Color getColor() {
+    return this.color;
+}
+    
     public void render(Graphics2D g) {
 
         if (open) {
@@ -800,13 +812,15 @@ public class Organism implements Comparable<Organism> {
                 g.setColor(Color.blue);
                 g.fill(getFoodArea());
             }
+            g.drawString(String.valueOf(getAge()), x, y);
+            g.drawRect(getFriendRadar().x, getFriendRadar().y, getFriendRadar().width, getFriendRadar().height);
 
         }
-        if (getSpecie().equalsIgnoreCase("wolf")) {
-            g.setFont(new Font("tahoma", 0, 16));
-            g.setColor(Color.black);
-            g.drawString(energy + "", x, y);
-        }
+//        if (getSpecie().equalsIgnoreCase("wolf")) {
+//            g.setFont(new Font("tahoma", 0, 16));
+//            g.setColor(Color.black);
+//            g.drawString(energy + "", x, y);
+//        }
 
         g.setColor(color);
         if (leader != null) {
@@ -815,10 +829,10 @@ public class Organism implements Comparable<Organism> {
         g.fillRect(x, y, size, size);
         g.setColor(Color.black);
         g.drawRect(x, y, size, size);
-        if (isHungry()) {
-            g.setColor(Color.green);
-            g.fillRect(x, y, size, size);
-        }
+//        if (isHungry() && 1 != 1) {
+//            g.setColor(Color.green);
+//            g.fillRect(x, y, size, size);
+//        }
 //        if (readyToReproduce()) {
 //            g.setColor(Color.pink);
 //            g.fillRect(x, y, size, size);
